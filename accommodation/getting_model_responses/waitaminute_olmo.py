@@ -79,9 +79,11 @@ def run_for_row(row: pd.Series, user_cols: list[str], max_user_turns: int | None
 
 def main(input_csv: str, output_csv: str, sample_n: int | None = None, max_user_turns: int | None = None):
     df = pd.read_csv(input_csv)
-    user_cols =['user_1']
-    if 'user_1' not in df.columns:
-        user_cols = ['prompt']
+    user_cols = ['user_1']
+    for candidate in ['user_1', 'prompt', 'question']:
+        if candidate in df.columns:
+            user_cols = [candidate]
+            break
     if sample_n is not None and sample_n < len(df):
         df_sub = df.sample(sample_n, random_state=42).copy()
     else:
