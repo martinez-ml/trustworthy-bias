@@ -75,14 +75,30 @@ def main():
     parser = argparse.ArgumentParser(description="Multi-Dialect Translation for Cancer-Myth")
     parser.add_argument("--workers", "-w", type=int, default=min(os.cpu_count() or 4, len(DIALECTS)), help="Worker processes")
     parser.add_argument("--limit", "-n", type=int, default=None, help="Limit rows per dataset (for quick testing)")
+    parser.add_argument("--dataset", "-d", type=str, default=None, help="Filter dataset by name (e.g. 'nfp', 'at_issue')")
     args = parser.parse_args()
 
     print("Loading datasets...")
     datasets = [
         ("cancer_at_issue_assert.csv", pd.read_csv("datasets/cancer-myth/cancer_at_issue_assert.csv"), "user_1"),
         ("cancer_not_at_issue_assert.csv", pd.read_csv("datasets/cancer-myth/cancer_not_at_issue_assert.csv"), "user_1"),
-        ("cancer_myth_hf.csv", load_dataset("Cancer-Myth/Cancer-Myth", split="validation").to_pandas(), "question"),
     ]
+
+    try:
+        hf_val = load_dataset("Cancer-Myth/Cancer-Myth", split="validation").to_pandas()
+        datasets.append(("cancer_myth_hf.csv", hf_val, "question"))
+    except Exception as e:
+        print(f"Notice: Could not load Cancer-Myth split='validation' ({e})")
+
+    try:
+        nfp_dataset = load_dataset("Cancer-Myth/Cancer-Myth", split="nfp").to_pandas()
+        nfp_col = "question" if "question" in nfp_dataset.columns else "user_1"
+        datasets.append(("cancer_nfp.csv", nfp_dataset, nfp_col))
+    except Exception as e:
+        print(f"Notice: Could not load Cancer-Myth split='nfp' ({e})")
+
+    if args.dataset:
+        datasets = [d for d in datasets if args.dataset.lower() in d[0].lower()]
 
     if args.limit:
         datasets = [(fn, df.head(args.limit), col) for fn, df, col in datasets]
