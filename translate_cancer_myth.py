@@ -73,32 +73,40 @@ def translate_dataset(task_args):
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-Dialect Translation for Cancer-Myth")
+    parser.add_argument("input_csv", nargs="?", default=None, help="Optional direct path to CSV file to translate")
     parser.add_argument("--workers", "-w", type=int, default=min(os.cpu_count() or 4, len(DIALECTS)), help="Worker processes")
     parser.add_argument("--limit", "-n", type=int, default=None, help="Limit rows per dataset (for quick testing)")
     parser.add_argument("--dataset", "-d", type=str, default=None, help="Filter dataset by name (e.g. 'nfp', 'at_issue')")
     args = parser.parse_args()
 
     print("Loading datasets...")
-    datasets = [
-        ("cancer_at_issue_assert.csv", pd.read_csv("datasets/cancer-myth/cancer_at_issue_assert.csv"), "user_1"),
-        ("cancer_not_at_issue_assert.csv", pd.read_csv("datasets/cancer-myth/cancer_not_at_issue_assert.csv"), "user_1"),
-    ]
+    datasets = []
 
-    try:
-        hf_val = load_dataset("Cancer-Myth/Cancer-Myth", split="validation").to_pandas()
-        datasets.append(("cancer_myth_hf.csv", hf_val, "question"))
-    except Exception as e:
-        print(f"Notice: Could not load Cancer-Myth split='validation' ({e})")
-
-    try:
-        nfp_dataset = load_dataset("Cancer-Myth/Cancer-Myth", split="nfp").to_pandas()
-        nfp_col = "question" if "question" in nfp_dataset.columns else "user_1"
-        datasets.append(("cancer_nfp.csv", nfp_dataset, nfp_col))
-    except Exception as e:
-        print(f"Notice: Could not load Cancer-Myth split='nfp' ({e})")
+    if args.input_csv:
+        if not os.path.exists(args.input_csv):
+            print(f"Error: Specified input file '{args.input_csv}' does not exist.")
+            return
+        df = pd.read_csv(args.input_csv)
+        col = "question" if "question" in df.columns else ("user_1" if "user_1" in df.columns else df.columns[0])
+        datasets.append((os.path.basename(args.input_csv), df, col))
+    else:
+        candidates = [
+            ("cancer_at_issue_assert.csv", "datasets/cancer-myth/cancer_at_issue_assert.csv", "user_1"),
+            ("cancer_not_at_issue_assert.csv", "datasets/cancer-myth/cancer_not_at_issue_assert.csv", "user_1"),
+            ("cancer_nfp.csv", "datasets/cancer-myth/cancer_nfp.csv", "question"),
+        ]
+        for fn, path, default_col in candidates:
+            if os.path.exists(path):
+                df = pd.read_csv(path)
+                col = default_col if default_col in df.columns else ("user_1" if "user_1" in df.columns else df.columns[0])
+                datasets.append((fn, df, col))
 
     if args.dataset:
         datasets = [d for d in datasets if args.dataset.lower() in d[0].lower()]
+
+    if not datasets:
+        print(f"No matching datasets found for filter: {args.dataset}")
+        return
 
     if args.limit:
         datasets = [(fn, df.head(args.limit), col) for fn, df, col in datasets]
@@ -109,7 +117,7 @@ def main():
         for filename, df, col in datasets
     ]
 
-    print(f"Translating {len(datasets)} datasets into {len(DIALECTS)} dialects using {args.workers} workers...\n")
+    print(f"Translating {len(datasets)} dataset(s) into {len(DIALECTS)} dialects using {args.workers} workers...\n")
     with ProcessPoolExecutor(max_workers=args.workers) as executor:
         list(executor.map(translate_dataset, tasks))
 
