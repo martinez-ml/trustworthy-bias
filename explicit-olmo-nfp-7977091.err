@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/fs/nexus-scratch/martj/trustworthy-bias/accommodation/getting_model_responses/explicit_olmo.py", line 2, in <module>
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+ModuleNotFoundError: No module named 'transformers'
