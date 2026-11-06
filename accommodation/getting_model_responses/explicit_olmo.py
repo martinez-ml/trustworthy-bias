@@ -91,19 +91,72 @@ def run_for_row(row: pd.Series, user_cols: list[str], max_user_turns: int | None
 
 def main(input_csv: str, output_csv: str, sample_n: int | None = None, max_user_turns: int | None = None):
     df = pd.read_csv(input_csv)
-    user_cols = ['user_1']
-    for candidate in ['user_1', 'prompt', 'question']:
+    user_cols = ["user_1"]
+    candidate_cols = [
+        "prompt",
+        "original_post",
+        "question",
+        "flipped_story",
+        "sentence",
+        "user_1",
+        "input",
+        "text",
+    ]
+    for candidate in candidate_cols:
         if candidate in df.columns:
             user_cols = [candidate]
             break
-    if sample_n is not None and sample_n < len(df):
-        df_sub = df.sample(sample_n, random_state=42).copy()
     else:
-        df_sub = df.copy()
+        ignore_cols = {"", "Unnamed: 0", "Unnamed: 0.1", "id", "conv_id", "rules_applied", "has_changes"}
+        for col in df.columns:
+            if col not in ignore_cols and df[col].dtype == object:
+                user_cols = [col]
+                break
+    print(f"[{os.path.basename(input_csv)}] Using input column: {user_cols}")
+    out_dir = os.path.dirname(output_csv)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
 
     records = []
+    completed_ids = set()
+    if os.path.exists(output_csv):
+        try:
+            existing_df = pd.read_csv(output_csv)
+            if "conv_id" in existing_df.columns:
+                completed_ids = set(existing_df["conv_id"].dropna().astype(int))
+                records = existing_df.to_dict(orient="records")
+                print(f"Resuming: found {len(completed_ids)} already-completed rows in {output_csv}")
+        except Exception:
+            records = []
+            completed_ids = set()
 
-    for conv_id, row in df_sub.iterrows():
+    if sample_n is not None and len(completed_ids) >= sample_n:
+        print(f"✓ Skipping {output_csv}: target of {sample_n} rows already met ({len(completed_ids)} completed).")
+        return
+
+    if len(completed_ids) >= len(df):
+        print(f"✓ Skipping {output_csv}: all {len(df)} rows already completed.")
+        return
+
+    uncompleted_rows = [
+        (conv_id, row) for conv_id, row in df.iterrows() if conv_id not in completed_ids
+    ]
+
+    if sample_n is not None:
+        needed = sample_n - len(completed_ids)
+        pending_tasks = uncompleted_rows[:needed]
+        total_target = sample_n
+    else:
+        pending_tasks = uncompleted_rows
+        total_target = len(df)
+
+    print(f"Target: {total_target} rows | Already done: {len(completed_ids)} | To process: {len(pending_tasks)}")
+
+    if not pending_tasks:
+        print(f"✓ Skipping {output_csv}: no pending rows to process.")
+        return
+
+    for conv_id, row in pending_tasks:
         per_row_outputs = run_for_row(
             row,
             user_cols=user_cols,
@@ -111,14 +164,21 @@ def main(input_csv: str, output_csv: str, sample_n: int | None = None, max_user_
         )
         for o in per_row_outputs:
             rec = {
+                **row.to_dict(),
+                "model_name": MODEL_NAME,
                 "conv_id": conv_id,
                 **o,
             }
+            if "prompt" not in rec and "user_text" in rec:
+                rec["prompt"] = rec["user_text"]
             records.append(rec)
 
-        out_df = pd.DataFrame.from_records(records)
-        out_df.to_csv(output_csv, index=False)
-        print(f"Saved progress after conv_id={conv_id}; total rows so far: {len(out_df)}")
+        if records:
+            out_df = pd.DataFrame.from_records(records)
+            if "conv_id" in out_df.columns:
+                out_df = out_df.sort_values("conv_id")
+            out_df.to_csv(output_csv, index=False)
+            print(f"Saved progress after conv_id={conv_id}; total rows so far: {len(out_df)}")
 
     print(f"Done. Final rows written: {len(records)}")
 

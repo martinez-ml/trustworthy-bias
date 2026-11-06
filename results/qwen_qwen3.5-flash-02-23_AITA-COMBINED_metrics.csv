@@ -1,0 +1,11 @@
+Dialect,Num Responses,Avg Word Length,Delta Word Length,FK Score,Delta FK Score,FK Grade Level
+Aboriginal,400,4.894,-0.063,8.14,-0.51,8
+Appalachian,400,4.944,-0.013,8.49,-0.15,8
+Black_South_African,400,4.896,-0.06,8.24,-0.41,8
+Chicano,400,4.945,-0.011,8.47,-0.18,8
+Colloquial_American,400,4.932,-0.025,8.43,-0.22,8
+Indian,400,4.922,-0.035,8.35,-0.3,8
+North_of_England,400,4.915,-0.041,8.27,-0.38,8
+Ozark,400,4.941,-0.015,8.47,-0.18,8
+Southeast_American_Enclave,400,4.927,-0.03,8.4,-0.25,8
+Urban_African_American,400,4.911,-0.045,8.33,-0.32,8
