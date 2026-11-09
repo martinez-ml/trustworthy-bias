@@ -1,0 +1,11 @@
+Dialect,Num Responses,Total Adjectives,Unique Adjectives,Top Dialect Adjectives,Top Baseline Adjectives
+Aboriginal,200,32788,764,"standard, female, non, broken, clear","psychological, petty, personal, professional, passive"
+Appalachian,200,33012,808,"standard, non, intentional, clear, specific","boundary, objective, massive, cold, critical"
+Black_South_African,200,32411,794,"female, pregnant, male, broken, non","personal, underlying, definitive, petty, valid"
+Chicano,200,32511,821,"non, standard, informal, negative, hypothetical","potential, young, dedicated, personal, bodily"
+Colloquial_American,200,33854,809,"standard, non, broken, clear, english","objective, gay, male, empty, artistic"
+Indian,200,30228,783,"female, non, pregnant, english, clear","potential, legal, most, private, specific"
+North_of_England,200,32716,817,"non, clear, broken, english, standard","logistical, vulnerable, moral, general, boundary"
+Ozark,200,33324,827,"standard, non, informal, clear, english","boundary, legitimate, new, artistic, irrational"
+Southeast_American_Enclave,200,33633,796,"standard, non, clear, broken, respectful","young, extra, unsolicited, visible, moral"
+Urban_African_American,200,33292,807,"non, standard, female, broken, informal","psychological, artistic, basic, hostile, passive"

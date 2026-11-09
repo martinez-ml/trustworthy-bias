@@ -89,11 +89,14 @@ def read_csv_outputs(paths: list[str] | str, limit_per_file: int | None = None) 
 def get_word_counts(texts: list[str]) -> dict[str, int]:
     """
     Extracts lowercase alphabetical tokens from all texts and returns
-    a dictionary mapping words to their frequency counts.
+    a dictionary mapping words to their frequency counts. Treats 'non-standard' as one word.
     """
     words = []
     for text in texts:
-        words.extend(re.findall(r"\b[a-zA-Z]{2,}\b", text.lower()))
+        cleaned = re.sub(r"\bnon[- ]standard\b", "non-standard", text.lower())
+        for w in re.findall(r"\b[a-zA-Z]+(?:-[a-zA-Z]+)*\b", cleaned):
+            if w == "non-standard" or (w.isalpha() and len(w) >= 2):
+                words.append(w)
     return dict(Counter(words))
 
 def filter_word_counts(counts: dict[str, int], min_count: int = 5) -> dict[str, int]:

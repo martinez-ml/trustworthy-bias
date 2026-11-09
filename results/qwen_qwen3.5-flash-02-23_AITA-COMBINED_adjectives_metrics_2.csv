@@ -1,0 +1,11 @@
+Dialect,Num Responses,Total Adjectives,Unique Adjectives,Top Dialect Adjectives,Top Baseline Adjectives
+Aboriginal,400,67537,1090,"standard, female, non, broken, clear","emotional, psychological, moral, passive, social"
+Appalachian,400,68519,1125,"standard, non, intentional, clear, linguistic","boundary, emotional, silent, toxic, financial"
+Black_South_African,400,65852,1112,"female, male, broken, non, confusing","personal, psychological, logistical, potential, emotional"
+Chicano,400,66647,1131,"standard, non, informal, english, linguistic","dedicated, potential, stupid, big, psychological"
+Colloquial_American,400,68855,1131,"standard, non, clear, english, specific","emotional, toxic, gay, silent, detailed"
+Indian,400,63176,1109,"female, non, english, male, broken","potential, public, societal, direct, most"
+North_of_England,400,66703,1084,"non, clear, standard, broken, english","moral, logistical, boundary, vulnerable, objective"
+Ozark,400,68082,1141,"standard, non, informal, clear, english","boundary, firm, joint, new, petty"
+Southeast_American_Enclave,400,68188,1129,"standard, non, clear, broken, respectful","emotional, psychological, boundary, financial, extra"
+Urban_African_American,400,67414,1106,"standard, non, female, clear, informal","psychological, passive, logistical, toxic, emotional"
